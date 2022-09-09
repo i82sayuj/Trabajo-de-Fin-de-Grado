@@ -1,24 +1,58 @@
-import pyopencl as cl 
+import pyopencl as cl
 import cv2 as cv
 import numpy  as np
 import sys
 import time
-
+import re
 
 def SetContoursVector(mat):
     ret,thresh = cv.threshold(mat,127,255,0)
     contours,hierarchy = cv.findContours(thresh,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_NONE)
     return contours
 
+def splitAxis(contourList,i):
+    contours2 = np.empty((len(contourList[i]),2),int)
+    for j in range(len(contourList[i])):
+      contours = str(contourList[i][j]).split(sep = ' ')
+      k = 0
+      while( k < len(contours)):
+          if(contours[k] == ''):
+              contours = np.delete(contours,k)
+              k = k-1
+          k = k+1  
+
+      if(len(contours) == 3):
+          contours[0] = contours[1]
+          contours[1] = contours[2]    
+      contours2[j][0] = re.sub('\[','',contours[0])
+      contours2[j][1] = re.sub('\]','',contours[1])
+    return contours2
+
+def middlePoints(contours):
+    pixels = np.zeros((len(contours)),dtype = np.float64)
+    for i in range(len(contours)):
+        contourAxis = splitAxis(contours,i)
+        for j in range(len(contourAxis)):
+            current = contourAxis[j][0]
+            for k in range(len(contourAxis)):
+                if(current == contourAxis[k][0] and j!=k):
+                    pixels[i] = pixels[i] + (abs(contourAxis[j][1]-contourAxis[k][1])/2)
+    return pixels
+
 def ShowContours(contours,tam):
     f = open('output\\contours.txt', 'w')
+    totalSuperficieParticula = 0
     for i in range(len(contours)):
-        tamanoParticula = len(contours[i])*80/tam*10
+        tamanoParticula = contours[i]*8000/tam
         tamanoParticula = round(tamanoParticula,3)
+        totalSuperficieParticula = totalSuperficieParticula +tamanoParticula
         particle = 'CONTORNO '+str(i)+': con '+str(tamanoParticula)+' milímetros cuadrados'
         f.write(particle+ '\n')
 
-    f.write('Número de partículas: '+str(len(contours)))
+    f.write('Número de partículas: '+str(len(contours)) + '\n')
+    totalSuperficieParticula = round(totalSuperficieParticula,3)
+    f.write('Total superficie partícula: ' + str(totalSuperficieParticula) + ' milímetros cuadrados \n')
+    f.write('Porcentaje partículas en imagen: ' + str(round(totalSuperficieParticula*100/8000,3)) + '%\n')
 
 def DeleteSmallObjects(contours):
     delete = []
@@ -57,13 +91,12 @@ def findParticle(number):
 
 #----------------------------------main program------------------------------------------#
 
-#read image and set standard size
+#read image and set standard size 
 image = cv.imread(sys.argv[2])
-
 if(sys.argv[2] == ""):
     print("Error, debe seleccionar una ruta o la ruta seleccionada no existe.")
     exit()
-    
+
 
 
 nombre = findParticle(sys.argv[1])
@@ -72,7 +105,7 @@ if(nombre == 0):
     exit()
 
 
-#4056*3040    4056,3040
+#Standard size: 4056*3040
 tam =4056*3040 
 size = (4056,3040)
 
@@ -132,7 +165,7 @@ cols = np.intc(imageBuffer.shape[1])
 b_g = cl.Buffer(context,mf.WRITE_ONLY ,  imageBuffer.nbytes)
 
 #creating program
-src = ''.join(open('kernel.cl').readlines())
+src = ''.join(open('build\\scripts-3.9\\kernel.cl').readlines())
 
 program = cl.Program(context,src).build()
 
@@ -154,7 +187,8 @@ cl.enqueue_copy(queue,result,b_g)
 contours = SetContoursVector(result)
 contours = np.array(contours,dtype = object)
 contours = DeleteSmallObjects(contours)
-ShowContours(contours,tam)
+pixels = middlePoints(contours)
+ShowContours(pixels,tam)
 cv.drawContours(image,contours,-1,(0,255,73),3)
 print('Número de',nombre,': ',contours.shape[0])
 
