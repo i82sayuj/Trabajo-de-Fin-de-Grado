@@ -8,7 +8,7 @@ import os
 
 def btm(nombre,c):
         sys.argv = [' ',str(nombre.current()),c.get()]
-        runpy.run_path('./main.py',run_name = '__main__')
+        runpy.run_path('./build/scripts-3.9/main.py',run_name = '__main__')
 
 
 
@@ -16,7 +16,7 @@ def particle():
     root = Tk()
     root.title("Particle indentify")
     root.config(width="700", height="500",background = "#38b382")
-    root.iconbitmap('imagenes_definitivas\\icon\\icon.ico')
+    root.iconbitmap('images\\icon.ico')
     root.resizable(0,0)
     
     frame1 = Frame(root)
@@ -54,11 +54,11 @@ def particle():
     root.mainloop()
 
 
-def fileWrite(EntryNombre,EntryMinBtm,EntryMaxBtm,EntryMargin):
+def fileWrite(EntryNombre,EntryMinBtm,EntryMaxBtm,EntryMargin,root):
         
         if(EntryNombre.get() == "" or EntryMinBtm.get()=="" or EntryMaxBtm.get()=="" or EntryMargin.get() == ""):
                 print("Error, debe especificar todos los campos.")
-                exit()
+                root.quit()
 
         file = open('files\\particles.txt','a')
         line = EntryNombre.get()+','+EntryMinBtm.get()+','+EntryMaxBtm.get()+','+EntryMargin.get()+'\n'
@@ -66,14 +66,14 @@ def fileWrite(EntryNombre,EntryMinBtm,EntryMaxBtm,EntryMargin):
 
         file.close()
         print("partícula añadida.")
-        exit()
+        root.destroy()
 
 def addParticle():
 
     root = Tk()
     root.title("Add Particle")
     root.config(width="700", height="500",background = "#38b382")
-    root.iconbitmap('imagenes_definitivas\\icon\\icon.ico')
+    root.iconbitmap('images\\icon.ico')
     root.resizable(0,0)
     
     frame1 = Frame(root)
@@ -104,12 +104,12 @@ def addParticle():
     EntryMargin.grid(row= 3,column = 1, pady = 5,padx = 5)
 
     v = StringVar()
-    fileWrite_arg = partial(fileWrite,EntryNombre,EntryMinBtm,EntryMaxBtm,EntryMargin)
+    fileWrite_arg = partial(fileWrite,EntryNombre,EntryMinBtm,EntryMaxBtm,EntryMargin,root)
     button = Button(frame1,text = "send", width = 15,command = fileWrite_arg)
     button.grid(row = 4, column = 0)
 
 
-def modifyFile(nombre,EntryNombre,EntryMinBtm,EntryMaxBtm,EntryMargin):
+def modifyFile(nombre,EntryNombre,EntryMinBtm,EntryMaxBtm,EntryMargin,root):
         contenido= list()
         with open('files\\particles.txt', 'r') as archivo:
                 for linea in archivo:
@@ -125,7 +125,7 @@ def modifyFile(nombre,EntryNombre,EntryMinBtm,EntryMaxBtm,EntryMargin):
                 archivo.writelines(contenido)
 
         print("partícula modificada")
-        exit()
+        root.destroy()
 
 
 def modifyParticle2(nombre):
@@ -133,7 +133,7 @@ def modifyParticle2(nombre):
     root = Tk()
     root.title("Modify Particle")
     root.config(width="700", height="500",background = "#38b382")
-    root.iconbitmap('imagenes_definitivas\\icon\\icon.ico')
+    root.iconbitmap('images\\icon.ico')
     root.resizable(0,0)
     
     frame1 = Frame(root)
@@ -163,7 +163,7 @@ def modifyParticle2(nombre):
     EntryMargin = Entry(frame1)
     EntryMargin.grid(row= 3,column = 1, pady = 5,padx = 5)
 
-    modifyFile_arg = partial(modifyFile,nombre,EntryNombre,EntryMinBtm,EntryMaxBtm,EntryMargin)
+    modifyFile_arg = partial(modifyFile,nombre,EntryNombre,EntryMinBtm,EntryMaxBtm,EntryMargin,root)
     button = Button(frame1,text = "send", width = 15,command = modifyFile_arg)
     button.grid(row = 4, column = 0)
 
@@ -172,7 +172,7 @@ def modifyParticle1():
     root = Tk()
     root.title("Modify Particle")
     root.config(width="700", height="500",background = "#38b382")
-    root.iconbitmap('imagenes_definitivas\\icon\\icon.ico')
+    root.iconbitmap('images\\icon.ico')
     root.resizable(0,0)
     
     frame1 = Frame(root)
@@ -196,13 +196,13 @@ def modifyParticle1():
 root = Tk()
 root.title("Menú principal")
 root.config(width="700", height="500",background = "#38b382")
-root.iconbitmap('imagenes_definitivas\\icon\\icon.ico')
+root.iconbitmap('images\\icon.ico')
 root.resizable(0,0)
 
 frame1 = Frame(root)
 frame1.place(x = 150, y = 100)
 
-foto = PhotoImage(file="imagenes_definitivas\\icon\\icono.png")
+foto = PhotoImage(file="images\\icono.png")
 Label(frame1,image=foto).grid(row = 0, column = 0)
 
 
@@ -217,4 +217,3 @@ addButton = Button(frame1,text ='Modificar un tipo de material',width = 62,comma
 addButton.grid(row = 3, column = 0)
 
 root.mainloop()
-
